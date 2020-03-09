@@ -8,7 +8,8 @@ const addExpense = ({description="",note="",amount=0, createdAt=0}={}) => ({
         id: uuid(),
         description,
         note,
-        amount
+        amount,
+        createdAt,
     }
 });
 
@@ -101,7 +102,7 @@ const filterReducer = (state = filterReducerDefaultState , action) => {
         case 'SET_TEXT_FILTER':
             return {
                 ...state,
-                ...action //?
+               text: action.text //?
             }
 
         case 'SORT_BY_AMOUNT':
@@ -135,6 +136,17 @@ const filterReducer = (state = filterReducerDefaultState , action) => {
 }
 
 
+const getVisibleExpenses = (expenses, {text, sortBy, startDate, endDate}) => {
+    return expenses.filter((expense)=> {
+        const startDateMatch = typeof startDate !== 'number' || expense.createdAt >= startDate;
+        const endDateMatch = typeof endDate !== 'number' || expense.createdAt <= endDate;
+        const textMatch = expense.description.toLowerCase().includes(text.toLowerCase());
+        console.log();
+        return startDateMatch && endDateMatch && textMatch
+    })
+}
+
+
 
 const store = createStore(
     combineReducers({
@@ -144,18 +156,22 @@ const store = createStore(
 );
 
 store.subscribe(()=> {
-    console.log(store.getState());
+    const state = store.getState();
+    const visibleExpenses = getVisibleExpenses(state.expenses, state.filters);
+    console.log(visibleExpenses);
 })
 
-// const expenseOne =store.dispatch(addExpense({
-//     description: 'Rent',
-//     amount: 500,
-// }))
+const expenseOne =store.dispatch(addExpense({
+    description: 'Rent',
+    amount: 500,
+    createdAt: 100
+}))
 
-// const expenseTwo =store.dispatch(addExpense({
-//     description: 'Coffee',
-//     amount: 100,
-// }))
+const expenseTwo =store.dispatch(addExpense({
+    description: 'Coffee',
+    amount: 100,
+    createdAt: -100
+}))
 
 
 // store.dispatch(removeExpense({
@@ -173,24 +189,24 @@ store.subscribe(()=> {
 
 // store.dispatch(sortByDate());
 
-store.dispatch(sortByStartDate(12345));
-store.dispatch(sortByEndDate(12345));
+store.dispatch(setTextFilter('Rent'));
+// store.dispatch(sortByEndDate(12345));
 
-const demoState = {
-    expenses: [{
-        id: '',
-        description: 'Saul',
-        note: 'Final Payment',
-        amount: 54500,
-        createdAt: 0
-    }],
-    filters: {
-        text: 'rent',
-        sortBy: 'amount',
-        startDate: undefined,
-        endDate: undefined
-    }
-}
+// const demoState = {
+//     expenses: [{
+//         id: '',
+//         description: 'Saul',
+//         note: 'Final Payment',
+//         amount: 54500,
+//         createdAt: 0
+//     }],
+//     filters: {
+//         text: 'rent',
+//         sortBy: 'amount',
+//         startDate: undefined,
+//         endDate: undefined
+//     }
+// }
 
 
 // const user = {
